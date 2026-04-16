@@ -13,14 +13,7 @@ import {
 } from '@/lib/utils'
 import type { DailyAdsCost, DailyAdsCostFormData } from '@/types'
 import { upsertDailyAds, getNetProfitSummary } from '@/lib/daily-ads'
-
-type NetProfitSummary = {
-  profit_produk: number
-  total_iklan: number
-  net_profit: number
-}
-
-type PeriodeSummary = NetProfitSummary
+import type { NetProfitSummary } from '@/lib/daily-ads'
 import { NetProfitChart } from '@/components/charts/DailyChart'
 import type { NetProfitChartPoint } from '@/components/charts/DailyChart'
 import * as XLSX from 'xlsx'
@@ -179,7 +172,7 @@ export default function IklanHarianPage() {
   }
 
   // ── KPI render helper ─────────────────────────────────────────
-  function renderKpi(label: string, kpi: PeriodeSummary | null) {
+  function renderKpi(label: string, kpi: NetProfitSummary | null) {
     const netPos = (kpi?.net_profit ?? 0) >= 0
     return (
       <div className="card p-4">
