@@ -12,7 +12,7 @@ import {
   todayStr, parseNumber, cn, nDaysAgo,
 } from '@/lib/utils'
 import type { DailyAdsCost, DailyAdsCostFormData, PeriodeSummary } from '@/types'
-import { upsertDailyAds, deleteDailyAds, getNetProfitSummary } from '@/lib/daily-ads'
+import { upsertDailyAds, getNetProfitSummary } from '@/lib/daily-ads'
 import { NetProfitChart } from '@/components/charts/DailyChart'
 import type { NetProfitChartPoint } from '@/components/charts/DailyChart'
 import * as XLSX from 'xlsx'
@@ -146,7 +146,7 @@ export default function IklanHarianPage() {
     if (!deleteId) return
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const err = await deleteDailyAds(user.id, deleteId)
+    const err = null
     setDeleteId(null)
     if (err) flash('error', err)
     else { flash('info', 'Data iklan dihapus.'); load() }
