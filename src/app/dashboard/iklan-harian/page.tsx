@@ -79,9 +79,9 @@ export default function IklanHarianPage() {
     ])
 
     setList(history ?? [])
-    setTodayKpi(todayP)
-    setWeekKpi(weekP)
-    setMonthKpi(monthP)
+    setTodayKpi(todayP as NetProfitSummary)
+    setWeekKpi(weekP as NetProfitSummary)
+    setMonthKpi(monthP as NetProfitSummary)
     setChartData((chartRaw ?? []) as NetProfitChartPoint[])
     setLoading(false)
   }, [dateFrom, dateTo])
