@@ -11,8 +11,16 @@ import {
   formatRupiah, formatDate, formatDateLong,
   todayStr, parseNumber, cn, nDaysAgo,
 } from '@/lib/utils'
-import type { DailyAdsCost, DailyAdsCostFormData, NetProfitSummary } from '@/types'
+import type { DailyAdsCost, DailyAdsCostFormData } from '@/types'
 import { upsertDailyAds, getNetProfitSummary } from '@/lib/daily-ads'
+
+type NetProfitSummary = {
+  profit_produk: number
+  total_iklan: number
+  net_profit: number
+}
+
+type PeriodeSummary = NetProfitSummary
 import { NetProfitChart } from '@/components/charts/DailyChart'
 import type { NetProfitChartPoint } from '@/components/charts/DailyChart'
 import * as XLSX from 'xlsx'
