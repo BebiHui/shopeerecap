@@ -11,7 +11,7 @@ import {
   formatRupiah, formatDate, formatDateLong,
   todayStr, parseNumber, cn, nDaysAgo,
 } from '@/lib/utils'
-import type { DailyAdsCost, DailyAdsCostFormData, PeriodeSummary } from '@/types'
+import type { DailyAdsCost, DailyAdsCostFormData, NetProfitSummary } from '@/types'
 import { upsertDailyAds, getNetProfitSummary } from '@/lib/daily-ads'
 import { NetProfitChart } from '@/components/charts/DailyChart'
 import type { NetProfitChartPoint } from '@/components/charts/DailyChart'
@@ -40,9 +40,9 @@ export default function IklanHarianPage() {
   const [dateTo, setDateTo]     = useState(todayStr())
 
   // KPI summaries
-  const [todayKpi, setTodayKpi]   = useState<PeriodeSummary | null>(null)
-  const [weekKpi, setWeekKpi]     = useState<PeriodeSummary | null>(null)
-  const [monthKpi, setMonthKpi]   = useState<PeriodeSummary | null>(null)
+  const [todayKpi, setTodayKpi]   = useState<NetProfitSummary | null>(null)
+  const [weekKpi, setWeekKpi]     = useState<NetProfitSummary | null>(null)
+  const [monthKpi, setMonthKpi]   = useState<NetProfitSummary | null>(null)
 
   // Chart data
   const [chartData, setChartData] = useState<NetProfitChartPoint[]>([])
