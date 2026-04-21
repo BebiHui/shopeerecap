@@ -90,6 +90,10 @@ const COLUMN_MAP: Record<string, keyof ShopeeRow> = {
   'total harga': 'total_harga_produk',
   'harga produk': 'total_harga_produk',
 
+  // Kolom format baru Shopee — diperlakukan sama dengan "Total Harga Produk"
+  'harga setelah diskon': 'total_harga_produk',
+  'harga_setelah_diskon': 'total_harga_produk',
+
   'voucher ditanggung penjual': 'voucher_ditanggung_penjual',
   'voucher_ditanggung_penjual': 'voucher_ditanggung_penjual',
   'voucher penjual': 'voucher_ditanggung_penjual',
@@ -269,10 +273,13 @@ export function buildTransactionPayload(
   const total_harga_produk = row.total_harga_produk * row.qty
 
   // ── 3. Hitung biaya Shopee default secara otomatis ──────────
-  //    Berdasarkan total_harga_produk (sudah × qty) dan voucher dari file Shopee.
+  //    Berdasarkan total_harga_produk (sudah × qty), voucher, dan metode pembayaran.
+  //    Jika metode pembayaran mengandung "SPayLater", biaya_transaksi_spaylater
+  //    dihitung otomatis sebesar 2.5% × total_harga_produk.
   const costs = calculateDefaultShopeeCosts(
     total_harga_produk,
-    row.voucher_ditanggung_penjual
+    row.voucher_ditanggung_penjual,
+    row.metode_pembayaran
   )
 
   // ── 4. Hitung profit awal ───────────────────────────────────

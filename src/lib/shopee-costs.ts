@@ -13,7 +13,8 @@
 //        (digabung ke satu field biaya_layanan_promo_xtra_gratis_ongkir_xtra)
 //   3. Biaya Proses Pesanan    = Rp 1.250 (tetap, per transaksi)
 //   4. Biaya Hemat Kirim       = 0  (tidak diautomatisasi)
-//   5. Biaya SPayLater         = 0  (tidak selalu ada)
+//   5. Biaya SPayLater         = 2.5% × total_harga_produk
+//                                (otomatis jika metode_pembayaran mengandung "SPayLater")
 //   6. Biaya AMS               = 0  (tidak selalu ada)
 //
 // FORMULA TOTAL:
@@ -51,6 +52,12 @@ export const RATE_LAYANAN_PROMO_XTRA = 0.045      // 4.5%
 export const RATE_LAYANAN_GRATIS_ONGKIR = 0.055   // 5.5%
 export const RATE_LAYANAN_TOTAL =                 // = 10.0%
   RATE_LAYANAN_PROMO_XTRA + RATE_LAYANAN_GRATIS_ONGKIR
+
+/**
+ * Rate biaya transaksi SPayLater Shopee.
+ * Dikenakan otomatis jika metode pembayaran mengandung "SPayLater".
+ */
+export const RATE_SPAYLATER = 0.025               // 2.5%
 
 /** Biaya proses pesanan — nilai tetap per transaksi */
 export const BIAYA_PROSES_PESANAN_DEFAULT = 1_250 // Rp 1.250
@@ -94,22 +101,31 @@ export interface DefaultShopeeCosts {
  * Dipakai saat import Excel → setiap baris langsung punya estimasi biaya.
  * User tetap bisa override manual setelah import.
  *
- * @param total_harga_produk  Nilai penjualan final dari Shopee (sudah include qty)
- * @param voucher_ditanggung_penjual  Voucher dari file import (default 0)
+ * @param total_harga_produk         Nilai penjualan final dari Shopee (sudah include qty)
+ * @param voucher_ditanggung_penjual Voucher dari file import (default 0)
+ * @param metode_pembayaran          Metode pembayaran dari file import (opsional).
+ *                                   Jika mengandung "SPayLater" (case-insensitive),
+ *                                   biaya_transaksi_spaylater = 2.5% × total_harga_produk.
  * @returns DefaultShopeeCosts — semua field selalu angka valid, tidak pernah NaN
  *
  * @example
- * // qty=1, total_harga_produk=300_000, harga_modal_per_item=150_000
+ * // Transaksi biasa (qty=1, total_harga_produk=300_000, harga_modal=150_000)
  * const costs = calculateDefaultShopeeCosts(300_000, 0)
  * // → biaya_administrasi = 24_750  (8.25%)
  * // → biaya_layanan...   = 30_000  (10%)
  * // → biaya_proses...    =  1_250  (tetap)
  * // → total_biaya_shopee = 56_000
- * // → profit = 300_000 - 150_000 - 56_000 = 94_000
+ *
+ * @example
+ * // Transaksi SPayLater (total_harga_produk=300_000)
+ * const costs = calculateDefaultShopeeCosts(300_000, 0, 'SPayLater')
+ * // → biaya_transaksi_spaylater = 7_500  (2.5%)
+ * // → total_biaya_shopee        = 63_500
  */
 export function calculateDefaultShopeeCosts(
   total_harga_produk: number,
-  voucher_ditanggung_penjual = 0
+  voucher_ditanggung_penjual = 0,
+  metode_pembayaran?: string | null
 ): DefaultShopeeCosts {
   const thp     = Math.max(0, n(total_harga_produk))
   const voucher = Math.max(0, n(voucher_ditanggung_penjual))
@@ -125,10 +141,19 @@ export function calculateDefaultShopeeCosts(
   // ── 3. Biaya Proses Pesanan: tetap Rp 1.250 ──────────────
   const biaya_proses_pesanan = BIAYA_PROSES_PESANAN_DEFAULT
 
-  // ── 4–6. Tidak diautomatisasi — default 0 ────────────────
+  // ── 4. Biaya Hemat Kirim: tidak diautomatisasi ────────────
   const biaya_program_hemat_biaya_kirim = 0
-  const biaya_transaksi_spaylater       = 0
-  const biaya_ams                       = 0
+
+  // ── 5. Biaya SPayLater: 2.5% jika metode pembayaran SPayLater
+  //       Deteksi case-insensitive — cocok untuk "SPayLater",
+  //       "Shopee SPayLater", "spaylater", dsb.
+  const isSpaylater = /spaylater/i.test(metode_pembayaran ?? '')
+  const biaya_transaksi_spaylater = isSpaylater
+    ? Math.round(thp * RATE_SPAYLATER)
+    : 0
+
+  // ── 6. Biaya AMS: tidak diautomatisasi ───────────────────
+  const biaya_ams = 0
 
   // ── Total ─────────────────────────────────────────────────
   const total_biaya_shopee =
